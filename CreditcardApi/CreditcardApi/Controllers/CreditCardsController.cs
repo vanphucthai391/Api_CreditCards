@@ -15,6 +15,8 @@ namespace CreditcardApi.Controllers
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
         // GET: api/CreditCards
+        [HttpGet]
+        [Route("api/creditcards")]
         public IEnumerable<CreditCard> GetCreditCards()
         {
             List<CreditCard> creditCards = new List<CreditCard>();
@@ -82,22 +84,55 @@ namespace CreditcardApi.Controllers
 
             return Ok(card); // Trả về dữ liệu CreditCard nếu tìm thấy
         }
-
-        public void PostCreditCard([FromBody] CreditCard card)
+        [HttpPost]
+        [Route("api/creditcards")]
+        public IHttpActionResult PostCreditCard([FromBody] CreditCard card)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            //using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            //{
+            //    connection.Open();
+
+            //    using (NpgsqlCommand command = new NpgsqlCommand("INSERT INTO creditcardtbl (cardownername, cardnumber, expirationdate, securitycode) VALUES (@OwnerName, @CardNumber, @ExpirationDate, @SecurityCode)", connection))
+            //    {
+            //        command.Parameters.AddWithValue("@OwnerName", card.cardownername);
+            //        command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
+            //        command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
+            //        command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
+            //        int rowsAffected = command.ExecuteNonQuery();
+            //    }
+            //}
+            try
             {
-                connection.Open();
-
-                using (NpgsqlCommand command = new NpgsqlCommand("INSERT INTO creditcardtbl (cardOwnerName, cardNumber, expirationDate, securityCode) VALUES (@OwnerName, @CardNumber, @ExpirationDate, @SecurityCode)", connection))
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
-                    command.Parameters.AddWithValue("@OwnerName", card.cardownername);
-                    command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
-                    command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
-                    command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
+                    connection.Open();
 
-                    command.ExecuteNonQuery();
+                    string query = "INSERT INTO creditcardtbl (cardownername, cardnumber, expirationdate, securitycode) VALUES (@OwnerName, @CardNumber, @ExpirationDate, @SecurityCode)";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@OwnerName", card.cardownername);
+                        command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
+                        command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
+                        command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            return Ok("Credit card information inserted successfully.");
+                        }
+                        else
+                        {
+                            return BadRequest("Failed to insert credit card information.");
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ở đây hoặc ghi log lỗi
+                return InternalServerError(ex);
             }
         }
 
@@ -105,39 +140,103 @@ namespace CreditcardApi.Controllers
         // PUT: api/CreditCards/5
         [HttpPut]
         [Route("api/creditcards/{id}")]
-        public void PutCreditCard(int id, [FromBody] CreditCard card)
+        public IHttpActionResult PutCreditCard(int id, [FromBody] CreditCard card)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
+            //using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            //{
+            //    connection.Open();
 
-                using (NpgsqlCommand command = new NpgsqlCommand("UPDATE creditcardtbl SET cardOwnerName = @OwnerName, cardNumber = @CardNumber, expirationDate = @ExpirationDate, securityCode = @SecurityCode WHERE paymentDetailId = @Id", connection))
+            //    using (NpgsqlCommand command = new NpgsqlCommand("UPDATE creditcardtbl SET cardOwnerName = @OwnerName, cardNumber = @CardNumber, expirationDate = @ExpirationDate, securityCode = @SecurityCode WHERE paymentDetailId = @Id", connection))
+            //    {
+            //        command.Parameters.AddWithValue("@OwnerName", card.cardownername);
+            //        command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
+            //        command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
+            //        command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
+            //        command.Parameters.AddWithValue("@Id", id);
+            //        command.ExecuteNonQuery();
+            //    }
+            //}
+            try
+            {
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
-                    command.Parameters.AddWithValue("@OwnerName", card.cardownername);
-                    command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
-                    command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
-                    command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
-                    command.Parameters.AddWithValue("@Id", id);
-                    command.ExecuteNonQuery();
+                    connection.Open();
+
+                    string query = "UPDATE creditcardtbl SET cardOwnerName = @OwnerName, cardNumber = @CardNumber, expirationDate = @ExpirationDate, securityCode = @SecurityCode WHERE paymentDetailId = @Id";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@OwnerName", card.cardownername);
+                        command.Parameters.AddWithValue("@CardNumber", card.cardnumber);
+                        command.Parameters.AddWithValue("@ExpirationDate", card.expirationdate);
+                        command.Parameters.AddWithValue("@SecurityCode", card.securitycode);
+                        command.Parameters.AddWithValue("@Id", id);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            return Ok("Credit card information updated successfully.");
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ở đây hoặc ghi log lỗi
+                return InternalServerError(ex);
             }
         }
 
         // DELETE: api/CreditCards/5
         [HttpDelete]
         [Route("api/creditcards/{id}")]
-        public void DeleteCreditCard(int id)
+        public IHttpActionResult DeleteCreditCard(int id)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            //using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            //{
+            //    connection.Open();
+
+            //    using (NpgsqlCommand command = new NpgsqlCommand("DELETE FROM creditcardtbl WHERE paymentDetailId = @Id", connection))
+            //    {
+            //        command.Parameters.AddWithValue("@Id", id);
+
+            //        command.ExecuteNonQuery();
+            //    }
+            //}
+            try
             {
-                connection.Open();
-
-                using (NpgsqlCommand command = new NpgsqlCommand("DELETE FROM creditcardtbl WHERE paymentDetailId = @Id", connection))
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
-                    command.Parameters.AddWithValue("@Id", id);
+                    connection.Open();
 
-                    command.ExecuteNonQuery();
+                    string query = "DELETE FROM creditcardtbl WHERE paymentDetailId = @Id";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Id", id);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            return Ok("Credit card information deleted successfully.");
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ở đây hoặc ghi log lỗi
+                return InternalServerError(ex);
             }
         }
     }
